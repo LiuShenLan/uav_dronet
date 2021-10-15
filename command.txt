@@ -1,0 +1,14 @@
+source activate tensorflow-gpu
+
+python predict_one_by_one.py 
+
+python run_without_gt.py --experiment_rootdir='./model/mytest_6_net_changed' --weights_fname='model_weights_59.h5' --test_dir='../drone-data-test-new'
+
+python evaluation.py --experiment_rootdir='./model/mytest_7_net_changed' --weights_fname='model_weights_249.h5' --test_dir='../drone-data-test'
+
+python cnn.py --experiment_rootdir='./model/mytest_7_net_changed' --train_dir='../drone-data-train' --val_dir='../drone-data-validation' --batch_size=16 --epochs=250 --log_rate=25
+
+python cnn.py --experiment_rootdir='./model/mytest_8_net_changed' --train_dir='../drone-data-train' --val_dir='../drone-data-validation' --batch_size=32 --epochs=250 --log_rate=25
+
+python cnn.py --experiment_rootdir='./model/mytest_16.2_net_changed' --train_dir='../drone-data-train' --val_dir='../drone-data-validation' --batch_size=128 --epochs=250 --log_rate=10 --restore_model=True --weights_fname='../mytest_16_net_changed/model_weights_139.h5' --initial_epoch=100
+

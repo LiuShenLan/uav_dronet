@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="5757696b-3946-4536-814d-b95168672b22" name="HP-server" url="http://119.163.144.8">
+        <fileTransfer host="119.163.144.8" port="12000" rootFolder="/home/fy/rpg_public_dronet-master" accessType="SFTP">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="12000" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
