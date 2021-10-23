@@ -30,9 +30,9 @@ gflags.DEFINE_integer('distribution_num', 3, 'The number of distributions we wan
 
 # Files
 gflags.DEFINE_string('experiment_rootdir', "./model", 'Folder containing all the logs, model weights and results')
-gflags.DEFINE_string('train_dir', "./dataset/UAVPatrol-train", 'Folder containing training experiments')
-gflags.DEFINE_string('val_dir', "./dataset/UAVPatrol-test", 'Folder containing validation experiments')
-gflags.DEFINE_string('test_dir', "./dataset/UAVPatrol-test", 'Folder containing testing experiments')
+gflags.DEFINE_string('train_dir', "./dataset/drone-data-train", 'Folder containing training experiments')
+gflags.DEFINE_string('val_dir', "./dataset/drone-data-validation", 'Folder containing validation experiments')
+gflags.DEFINE_string('test_dir', "./dataset/drone-data-test", 'Folder containing testing experiments')
 
 # Model
 gflags.DEFINE_bool('restore_model', False, 'Whether to restore a trained model for training')

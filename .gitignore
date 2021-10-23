@@ -1,3 +1,6 @@
 dataset
 logs
 model
+__pycache__
+.idea
+.vscode

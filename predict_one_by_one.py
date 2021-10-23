@@ -51,7 +51,7 @@ def main():
     # print(sys.path[0])
     # file_name(sys.path[0])
     json_model_path = os.path.join(sys.path[0], 'model/model_struct.json')
-    weights_path = os.path.join(sys.path[0], 'model/model_weights_299.h5')
+    weights_path = os.path.join(sys.path[0], 'model/train1/model_weights_299.h5')
     # 设置 keras utils
     K.set_learning_phase(TEST_PHASE)
     # 加载 json 并创建模型
