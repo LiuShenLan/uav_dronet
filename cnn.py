@@ -175,11 +175,11 @@ def _main():
 def main(argv):
     # Utility main to load flags
     try:
-      argv = FLAGS(argv)  # parse flags
+        argv = FLAGS(argv)  # parse flags
     except gflags.FlagsError:
-      print ('Usage: %s ARGS\\n%s' % (sys.argv[0], FLAGS))
+        print ('Usage: %s ARGS\\n%s' % (sys.argv[0], FLAGS))
 
-      sys.exit(1)
+        sys.exit(1)
     _main()
 
 
