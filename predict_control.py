@@ -54,7 +54,7 @@ def main():
     # 设置模型加载路径
     json_model_path = os.path.join(sys.path[0], 'model/model_struct.json')
     weights_path = os.path.join(sys.path[0], 'model/download/model_weights_299.h5')
-    img_path = "/home/lsl/data/project/UAV/dataset/realTimeImg.jpg"
+    img_path = "../../dataset/realTimeImg.jpg"
 
     # Input image dimensions
     img_width, img_height = FLAGS.img_width, FLAGS.img_height
