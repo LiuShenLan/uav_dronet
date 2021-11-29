@@ -85,7 +85,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../yolov5" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
     <property name="two.files.diff.last.used.file" value="$PROJECT_DIR$/../download_file/rpg_public_dronet-master-Alien/predict_in_realtime.py" />
   </component>
@@ -181,7 +181,14 @@
       <workItem from="1634263249396" duration="464000" />
       <workItem from="1634264105404" duration="11000" />
       <workItem from="1635066774032" duration="1291000" />
-      <workItem from="1635383719356" duration="9383000" />
+      <workItem from="1635383719356" duration="20175000" />
+      <workItem from="1636118403777" duration="3008000" />
+      <workItem from="1636266663101" duration="89000" />
+      <workItem from="1636267046981" duration="502000" />
+      <workItem from="1636268675886" duration="15494000" />
+      <workItem from="1637747045546" duration="11000" />
+      <workItem from="1637808157057" duration="21000" />
+      <workItem from="1638176811096" duration="14000" />
     </task>
     <servers />
   </component>
