@@ -29,7 +29,7 @@ def getModel(img_width, img_height, img_channels, output_dim, weights_path):
     # Returns
        model: A Model instance.
     """
-    model = cnn_models.resnet8(img_width, img_height, img_channels, output_dim)
+    model = cnn_models.resnet8_MDN(img_width, img_height, img_channels, output_dim)
 
     if weights_path:
         try:
@@ -60,11 +60,10 @@ def trainModel(train_data_generator, val_data_generator, model, initial_epoch):
     model.k_mse = tf.Variable(FLAGS.batch_size, trainable=False, name='k_mse', dtype=tf.int32)
     model.k_entropy = tf.Variable(FLAGS.batch_size, trainable=False, name='k_entropy', dtype=tf.int32)
 
-
     optimizer = optimizers.Adam(decay=1e-5)
     model.compile(loss=[utils.hard_mining_mse(model.k_mse),
                         utils.hard_mining_entropy(model.k_entropy)],
-                        optimizer=optimizer, loss_weights=[model.alpha, model.beta])
+                  optimizer=optimizer, loss_weights=[model.alpha, model.beta])
     # model.compile(loss=[utils.sparse_categorical_crossentropy_o,
     #                     utils.sparse_categorical_crossentropy_t],
     #               optimizer=optimizer, loss_weights=[model.alpha, model.beta],
@@ -98,17 +97,16 @@ def trainModel(train_data_generator, val_data_generator, model, initial_epoch):
     validation_steps = int(np.ceil(val_data_generator.samples / FLAGS.batch_size))
 
     model.fit_generator(train_data_generator,
-                        epochs=FLAGS.epochs, steps_per_epoch = steps_per_epoch,
+                        epochs=FLAGS.epochs, steps_per_epoch=steps_per_epoch,
                         callbacks=[writeBestModel, saveModelAndLoss, tensorboard],
                         validation_data=val_data_generator,
-                        validation_steps = validation_steps,
+                        validation_steps=validation_steps,
                         initial_epoch=initial_epoch)
 
 
 def _main():
-
     # Create the experiment rootdir if not already there
-    if not os.path.exists(FLAGS.experiment_rootdir):    # ./model
+    if not os.path.exists(FLAGS.experiment_rootdir):  # ./model
         os.makedirs(FLAGS.experiment_rootdir)
 
     # Input image resized dimensions
@@ -118,7 +116,7 @@ def _main():
     crop_img_width, crop_img_height = FLAGS.crop_img_width_dronet, FLAGS.crop_img_height_dronet
 
     # Load mode for images
-    if FLAGS.img_mode=='rgb':
+    if FLAGS.img_mode == 'rgb':
         img_channels = 3
     elif FLAGS.img_mode == 'grayscale':
         img_channels = 1
@@ -129,41 +127,41 @@ def _main():
     output_dim = 1
 
     # Generate training data with real-time augmentation
-    train_datagen = utils.DroneDataGenerator(rescale = 1./255
-                                            # ,zoom_range = [0.7,1]
+    train_datagen = utils.DroneDataGenerator(rescale=1. / 255
+                                             # ,zoom_range = [0.7,1]
                                              )
 
     train_generator = train_datagen.flow_from_directory(FLAGS.train_dir,
-                                                        shuffle = True,
+                                                        shuffle=True,
                                                         color_mode=FLAGS.img_mode,
                                                         target_size=(img_height, img_width),
                                                         crop_size=(crop_img_height, crop_img_width),
-                                                        batch_size = FLAGS.batch_size)
+                                                        batch_size=FLAGS.batch_size)
 
     # Generate validation data with real-time augmentation
-    val_datagen = utils.DroneDataGenerator(rescale = 1./255)
+    val_datagen = utils.DroneDataGenerator(rescale=1. / 255)
 
     val_generator = val_datagen.flow_from_directory(FLAGS.val_dir,
-                                                        shuffle = True,
-                                                        color_mode=FLAGS.img_mode,
-                                                        target_size=(img_height, img_width),
-                                                        crop_size=(crop_img_height, crop_img_width),
-                                                        batch_size = FLAGS.batch_size)
+                                                    shuffle=True,
+                                                    color_mode=FLAGS.img_mode,
+                                                    target_size=(img_height, img_width),
+                                                    crop_size=(crop_img_height, crop_img_width),
+                                                    batch_size=FLAGS.batch_size)
 
     # Weights to restore
-    weights_path = os.path.join(FLAGS.experiment_rootdir, FLAGS.weights_fname)
-    initial_epoch = 0
-    if not FLAGS.restore_model:
+    if FLAGS.restore_model:
+        # In this case weigths will start from the specified model
+        weights_path = os.path.join(FLAGS.experiment_rootdir, FLAGS.weights_fname)
+        initial_epoch = FLAGS.initial_epoch
+    else:
         # In this case weights will start from random
         weights_path = None
-    else:
-        # In this case weigths will start from the specified model
-        initial_epoch = FLAGS.initial_epoch
+        initial_epoch = 0
 
 
     # Define model
     model = getModel(crop_img_width, crop_img_height, img_channels,
-                        output_dim, weights_path)
+                     output_dim, weights_path)
 
     # Serialize model into json
     '''json_model_path = os.path.join(FLAGS.experiment_rootdir, FLAGS.json_model_fname)
@@ -177,7 +175,7 @@ def main(argv):
     try:
         argv = FLAGS(argv)  # parse flags
     except gflags.FlagsError:
-        print ('Usage: %s ARGS\\n%s' % (sys.argv[0], FLAGS))
+        print('Usage: %s ARGS\\n%s' % (sys.argv[0], FLAGS))
 
         sys.exit(1)
     _main()

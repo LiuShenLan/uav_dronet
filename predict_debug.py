@@ -49,8 +49,8 @@ def gaussian(sigs, mus, pis, x):
 
 def main():
     # TCP socket
-    TCP_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    TCP_socket.connect(("127.0.0.1", 5555)) # 127.0.0.1为本机IP地址
+    # TCP_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # TCP_socket.connect(("127.0.0.1", 5555)) # 127.0.0.1为本机IP地址
     # 设置模型加载路径
     json_model_path = os.path.join(sys.path[0], 'model/model_struct.json')
     weights_path = os.path.join(sys.path[0], 'model/download/model_weights_299.h5')
@@ -102,7 +102,7 @@ def main():
 
         # 预测数据处理
         y_pred = np.reshape(parameter, [-1, 6])
-        out_mu, out_pi = np.split(y_pred, 2, axis=1)
+        out_mu, out_pi = np.split(y_pred, 2, axis=1)    # 分别为y_pred的前三个元素与后三个元素
         pi = sum_exp(out_pi, 1)
         pi = np.split(pi, 3, axis=1)
         # component_splits = [1, 1, 1]
@@ -124,24 +124,24 @@ def main():
         continue_flag = 0
         sum_y = 0
         sum_x = 0
-        for x_, y_ in zip(x, y):
+        for x_, y_ in zip(x, y):    # 横向遍历所有的点，计算方向概率与水平坐标
             # if y_ > 1.:
-            if y_ > 0.6:
-                if continue_flag == 0:
+            if y_ > 0.6:    # 方向概率>0.6才开始计算
+                if continue_flag == 0:  # 方向概率由小到大的切换点
                     continue_flag = 1
                     start = x_
-                sum_y = sum_y + y_
+                sum_y = sum_y + y_  # 累计高概率区域的概率总和
                 sum_x = sum_x + 1
                 y_ = (img_origi.shape[0] - y_ * 200 - 80).astype(np.int32)
                 x_ = ((x_ + 1) / 2 * img_origi.shape[1]).astype(np.int32)
                 x_ = img_origi.shape[1] - x_
                 # cv2.circle(img_origi, (x_, y_), 3, (0, 255, 0), 4)
                 cv2.circle(img_origi, (x_, int(y_ / 2) + 150), 3, (0, 255, 0), 4)
-            else:
-                if continue_flag == 1:
+            else:   # 方向概率<0.6
+                if continue_flag == 1:  # 方向概率由大到小的切换点
                     continue_flag = 0
-                    possible_direct.append((x_ + start)/2)
-                    possible_roll_speed.append((sum_y / sum_x - 1.) / 2)
+                    possible_direct.append((x_ + start)/2)  # 概率峰值的中点
+                    possible_roll_speed.append((sum_y / sum_x - 1.) / 2)    # 前后平移速度 TODO: roll计算原理
                     sum_y = 0
                     sum_x = 0
                 y_ = (img_origi.shape[0] - y_ * 200 - 80).astype(np.int32)
@@ -154,11 +154,11 @@ def main():
         # print("====Map_direct = {} ====".format(map_direct))
         map_direct = float(map_direct)
         min_direct_diff = 180
-        steer = 0.
-        roll_speed_ = 0
+        steer = 0.  # 左右旋转
+        roll_speed_ = 0 # 前后平移
         count = 0
 
-        for possible_direct_ in possible_direct:
+        for possible_direct_ in possible_direct:    # 寻找possible_direct中最小的转角
             # print(possible_direct_)
             cv2.line(img_origi, (int(img_origi.shape[1] / 2), img_origi.shape[0] - 50),
                  (int(img_origi.shape[1] / 2 - math.tan(possible_direct_ * 3.14 / 2) * 100), img_origi.shape[0] - 150),
@@ -175,12 +175,14 @@ def main():
         map_direct = map_direct/90
         seq = "ab"+'%f'%(map_direct*400)+',%f'%(0*200)
 
-        roll_speed = roll_speed * 0.9 + roll_speed_ * 0.1
+        roll_speed = roll_speed * 0.9 + roll_speed_ * 0.1   # 一阶滤波
         seq = "ab" + '%f' % (-steer * 500) + ',%f' % (translation * 100) + ',%f' % (roll_speed * 125 + 20)
         # seq = "ab" + '%f' % (-steer * 500) + ',%f' % (translation * 400) + ',%f' % (roll_speed * 500 + 80)
-        # steer:左右旋转    translation:左右平移    roll_speed:前后平移
+        # steer:左右旋转
+        # translation:左右平移
+        # roll_speed:前后平移
         print('\r' + seq, end='')
-        TCP_socket.send(seq.encode('utf-8')) #send datas
+        # TCP_socket.send(seq.encode('utf-8')) #send datas
 
         # cv2.line(img_origi, (int(img_origi.shape[1]/2),img_origi.shape[0]), (int(img_origi.shape[1]/2),50), (0,255,0), 1)
         cv2.line(img_origi, (int(img_origi.shape[1] / 2), img_origi.shape[0] - 50), (int((translation + 1) / 2 * img_origi.shape[1]), img_origi.shape[0] - 50), (255, 255, 0), 8)

@@ -72,15 +72,15 @@ class DroneDirectoryIterator(Iterator):
                     images/
                     translation.txt or direction_n_filted.txt
     # Arguments
-       directory: Path to the root directory to read data from.
+       directory: Path to the root directory to read data from.                 ./dataset/drone-data-train(test)
        image_data_generator: Image Generator.
-       target_size: tuple of integers, dimensions to resize input images to.
-       crop_size: tuple of integers, dimensions to crop input images.
-       color_mode: One of `"rgb"`, `"grayscale"`. Color mode to read images.
-       batch_size: The desired batch size
-       shuffle: Whether to shuffle data or not
-       seed : numpy seed to shuffle data
-       follow_links: Bool, whether to follow symbolic links or not
+       target_size: tuple of integers, dimensions to resize input images to.    (400, 100)
+       crop_size: tuple of integers, dimensions to crop input images.           (200, 200)
+       color_mode: One of `"rgb"`, `"grayscale"`. Color mode to read images.    rgb
+       batch_size: The desired batch size                                       5
+       shuffle: Whether to shuffle data or not                                  True
+       seed : numpy seed to shuffle data                                        None
+       follow_links: Bool, whether to follow symbolic links or not              False
 
     # TODO: Add functionality to save images to have a look at the augmentation
     """
@@ -89,18 +89,18 @@ class DroneDirectoryIterator(Iterator):
             batch_size=32, shuffle=True, seed=None, follow_links=False):
         self.directory = directory  # ./dataset/drone-data-train
         self.image_data_generator = image_data_generator
-        self.target_size = tuple(target_size)
-        self.crop_size = tuple(crop_size)
-        self.follow_links = follow_links
+        self.target_size = tuple(target_size)   # (400, 100)
+        self.crop_size = tuple(crop_size)   # (200, 200)
+        self.follow_links = follow_links    # False
         if color_mode not in {'rgb', 'grayscale'}:
             raise ValueError('Invalid color mode:', color_mode,
                              '; expected "rgb" or "grayscale".')
-        self.color_mode = color_mode
+        self.color_mode = color_mode    # rgb
         if self.color_mode == 'rgb':
-            self.image_shape = self.crop_size + (3,)
+            self.image_shape = self.crop_size + (3,)    # (200, 200, 3)
         else:
             self.image_shape = self.crop_size + (1,)
-        # First count how many experiments are out there
+        # 首先计算实验文件夹数目 First count how many experiments are out there
         self.samples = 0
 
         experiments = []
@@ -110,11 +110,11 @@ class DroneDirectoryIterator(Iterator):
         self.num_experiments = len(experiments)
         self.formats = {'png', 'jpg'}
 
-        # Idea = associate each filename with a corresponding steering or label
+        # 每个文件夹对应一个转向或标签 Idea = associate each filename with a corresponding steering or label
         self.filenames = []
         self.ground_truth = []
 
-        # Determine the type of experiment (steering or collision) to compute
+        # 确定计算loss使用转向或碰撞概率 Determine the type of experiment (steering or collision) to compute
         # the loss
         self.exp_type = []
 
@@ -122,7 +122,7 @@ class DroneDirectoryIterator(Iterator):
             subpath = os.path.join(directory, subdir)
             self._decode_experiment_dir(subpath)
 
-        # Conversion of list into array
+        # list转换为array Conversion of list into array
         self.ground_truth = np.array(self.ground_truth, dtype = K.floatx())
 
         assert self.samples > 0, "Did not find any data"
@@ -137,21 +137,24 @@ class DroneDirectoryIterator(Iterator):
                 key=lambda tpl: tpl[0])
 
     def _decode_experiment_dir(self, dir_subpath):
-        # Load steerings or labels in the experiment dir
-        steerings_filename = os.path.join(dir_subpath, "direction_n_filted.txt")
-        labels_filename = os.path.join(dir_subpath, "translation.txt")
+        # 加载转向或平移标签 Load steerings or labels in the experiment dir
+
+        # 标签路径
+        steerings_filename = os.path.join(dir_subpath, "direction_n_filted.txt")    # 转向
+        labels_filename = os.path.join(dir_subpath, "translation.txt")  # 平移
 
         # Try to load steerings first. Make sure that the steering angle or the
         # label file is in the first column. Note also that the first line are
         # comments so it should be skipped.
+        # 尝试加载转向标签，确保转向角在文件第一列
         try:
             ground_truth = np.loadtxt(steerings_filename, usecols=0)
-            exp_type = 1
+            exp_type = 1    # 转向
         except OSError as e:
-            # Try load collision labels if there are no steerings
+            # 没有转向文件则尝试加载平移标签 Try load collision labels if there are no steerings
             try:
                 ground_truth = np.loadtxt(labels_filename, usecols=0)
-                exp_type = 0
+                exp_type = 0    # 平移
             except OSError as e:
                 print("Neither steerings nor labels found in dir {}".format(
                 dir_subpath))
@@ -164,19 +167,20 @@ class DroneDirectoryIterator(Iterator):
             sorted_files = sorted(files,
                     key = lambda fname: int(re.search(r'\d+',fname).group()))
             for frame_number, fname in enumerate(sorted_files):
+                # 检查图片后缀名是否符合
                 is_valid = False
                 for extension in self.formats:
                     if fname.lower().endswith('.' + extension):
                         is_valid = True
                         break
+
                 if is_valid:
                     absolute_path = os.path.join(root, fname)
                     self.filenames.append(os.path.relpath(absolute_path,
                             self.directory))
                     self.ground_truth.append(ground_truth[frame_number])
-                    self.exp_type.append(exp_type)
+                    self.exp_type.append(exp_type)  # 0:平移  1:转向
                     self.samples += 1
-
 
     def next(self):
         with self.lock:
@@ -216,12 +220,12 @@ class DroneDirectoryIterator(Iterator):
             batch_x[i] = x
 
             """
-            if self.exp_type[index_array[i]] == 1:
+            if self.exp_type[index_array[i]] == 1:  # 1: 转向
                 # Steering experiment (t=1)
                 batch_steer[i,0] =1.0
                 batch_steer[i,1] = self.ground_truth[index_array[i]]
                 batch_coll[i] = np.array([0.0, 0.0])
-            else:
+        else:   # 0: 平移
                 raise Exception("Invalid data!", self.exp_type[index_array[i]])
             """
             batch_steer[i, 0] = 1.0

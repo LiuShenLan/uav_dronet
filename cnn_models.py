@@ -616,7 +616,7 @@ def resnet8(img_width, img_height, img_channels, output_dim):
        output_dim: Dimension of model output.
 
     # Returns
-       model: A Model instance.
+       model: A Model ijavascript:nstance.
     """
 
     # Input
